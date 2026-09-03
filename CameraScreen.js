@@ -73,18 +73,21 @@ const handleIdentify = () => {
 }; 
 
 
-// photo preview
+// PHOTO PREVIEW
 if (photo) {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.previewContainer}>
 
-      <Image
-        source={{ uri: photo }}
-        style={styles.previewImage}
-      />
+      {/* PHOTO AREA */}
+      <View style={styles.photoArea}>
 
-      <View style={styles.previewOverlay}>
+        <Image
+          source={{ uri: photo }}
+          style={styles.previewImage}
+          resizeMode="cover"
+        />
 
+        {/* BACK BUTTON */}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => setPhoto(null)}
@@ -96,10 +99,23 @@ if (photo) {
           />
         </TouchableOpacity>
 
+        {/* TITLE */}
         <Text style={styles.previewTitle}>
           Shawl Preview
         </Text>
 
+      </View>
+
+
+      {/* BOTTOM CARD */}
+      <View
+        style={[
+          styles.previewCard,
+          { backgroundColor: colors.card }
+        ]}
+      >
+
+        {/* IDENTIFY BUTTON */}
         <TouchableOpacity
           style={styles.identifyButton}
           onPress={handleIdentify}
@@ -108,8 +124,10 @@ if (photo) {
             Identify Shawl
           </Text>
         </TouchableOpacity>
-       </View>
-    </SafeAreaView>
+
+      </View>
+
+    </View>
   );
 }
 
@@ -254,15 +272,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#004361',
   },
-
-
   overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-
   frame: {
     width: 280,
     height: 280,
@@ -270,16 +284,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     bottom: 100,
   },
-
-
   corner: {
     position: 'absolute',
     width: 40,
     height: 40,
     borderColor: '#fff',
   },
-
-
   topLeft: {
     top: 0,
     left: 0,
@@ -287,8 +297,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderTopLeftRadius: 12,
   },
-
-
   topRight: {
     top: 0,
     right: 0,
@@ -296,8 +304,6 @@ const styles = StyleSheet.create({
     borderRightWidth: 4,
     borderTopRightRadius: 12,
   },
-
-
   bottomLeft: {
     bottom: 0,
     left: 0,
@@ -305,8 +311,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderBottomLeftRadius: 12,
   },
-
-
   bottomRight: {
     bottom: 0,
     right: 0,
@@ -314,8 +318,6 @@ const styles = StyleSheet.create({
     borderRightWidth: 4,
     borderBottomRightRadius: 12,
   },
-
-
   instruction: {
     color: '#fff',
     fontSize: 15,
@@ -324,8 +326,6 @@ const styles = StyleSheet.create({
     bottom: -35,
     width: 270,
   },
-
-
   /* FLASH */
 
   flashButton: {
@@ -340,8 +340,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 10,
   },
-
-
   /* BOTTOM CARD */
 
   card: {
@@ -351,8 +349,6 @@ const styles = StyleSheet.create({
     right: 0,
     height: 250,
   },
-
-
   bottomBar: {
     position: 'absolute',
     top: 35,
@@ -362,8 +358,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-
-
   /* CAPTURE BUTTON */
 
   captureBtn: {
@@ -375,16 +369,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-
   innerCircle: {
     width: 55,
     height: 55,
     borderRadius: 27.5,
     backgroundColor: '#999999',
   },
-
-
   /* PERMISSION */
 
   permissionContainer: {
@@ -393,47 +383,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 30,
   },
-
-
   permissionText: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
   },
-
-
   permissionButton: {
     paddingHorizontal: 25,
     paddingVertical: 12,
     borderRadius: 25,
     backgroundColor: '#004361',
   },
-
-
   permissionButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
 
-  previewImage: {
-  ...StyleSheet.absoluteFillObject,
+  previewContainer: {
+  flex: 1,
   width: '100%',
-  height: '100%',
-  resizeMode: 'contain',
-  backgroundColor: '#000',
+  backgroundColor: '#fff',
 },
 
-previewOverlay: {
-  ...StyleSheet.absoluteFillObject,
-  justifyContent: 'space-between',
+photoArea: {
+  top: 40,
+  flex: 1,
+  width: '100%',
+  backgroundColor: '#010101',
+  position: 'relative',
+},
+
+previewImage: {
+  width: '100%',
+  height: '100%',
+},
+
+previewCard: {
+  top: 40,
+  width: '100%',
+  height: 255,
   alignItems: 'center',
-  paddingTop: 20,
-  paddingBottom: 40,
+  justifyContent: 'center',
 },
 
 backButton: {
   position: 'absolute',
-  marginTop: 57,
+  top: 15,
   left: 10,
   width: 45,
   height: 45,
@@ -444,16 +439,18 @@ backButton: {
 },
 
 previewTitle: {
+  position: 'absolute',
+  top: 20,
+  alignSelf: 'center',
   color: '#fff',
   fontSize: 20,
   fontWeight: 'bold',
-  marginTop: 50,
 },
 
 identifyButton: {
+  marginBottom: 90,
   width: '70%',
   height: 55,
-  marginBottom: 190,
   borderRadius: 28,
   backgroundColor: '#004361',
   justifyContent: 'center',
