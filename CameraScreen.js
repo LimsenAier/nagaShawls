@@ -5,6 +5,7 @@ import {Ionicons,} from '@expo/vector-icons';
 import {CameraView, useCameraPermissions,} from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from './ThemeContext';
+import { Dimensions } from 'react-native';
 
 
 export default function CameraScreen() {
@@ -17,6 +18,8 @@ export default function CameraScreen() {
   const [flashOn, setFlashOn] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [facing, setFacing] = useState('back');
+  const { width, height } = Dimensions.get('window');
+  const [containerSize, setContainerSize] = useState(null);
 
   //functions
     const pickImage = async () => {
@@ -78,44 +81,26 @@ if (photo) {
   return (
     <View style={styles.previewContainer}>
 
-      {/* PHOTO AREA */}
-      <View style={styles.photoArea}>
+      <Image
+        source={{ uri: photo }}
+        style={styles.previewImage}
+        resizeMode="cover"
+      />
 
-        <Image
-          source={{ uri: photo }}
-          style={styles.previewImage}
-          resizeMode="cover"
-        />
-
-        {/* BACK BUTTON */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setPhoto(null)}
-        >
-          <Ionicons
-            name="arrow-back"
-            size={25}
-            color="#fff"
-          />
-        </TouchableOpacity>
-
-        {/* TITLE */}
-        <Text style={styles.previewTitle}>
-          Shawl Preview
-        </Text>
-
-      </View>
-
-
-      {/* BOTTOM CARD */}
-      <View
-        style={[
-          styles.previewCard,
-          { backgroundColor: colors.card }
-        ]}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => setPhoto(null)}
       >
+        <Ionicons name="arrow-back" size={25} color="#fff" />
+      </TouchableOpacity>
 
-        {/* IDENTIFY BUTTON */}
+      <Text style={styles.previewTitle}>
+        Shawl Preview
+      </Text>
+
+      <View
+        style={[styles.previewCard, { backgroundColor: colors.card }]}
+      >
         <TouchableOpacity
           style={styles.identifyButton}
           onPress={handleIdentify}
@@ -124,7 +109,6 @@ if (photo) {
             Identify Shawl
           </Text>
         </TouchableOpacity>
-
       </View>
 
     </View>
@@ -164,17 +148,28 @@ if (photo) {
 
   return (
 
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container}
+      onLayout={(e) => {
+    const { width, height } = e.nativeEvent.layout;
+    setContainerSize({ width, height });
+  }}>
 
       {/* CAMERA */}
-
+       {containerSize && (
       <CameraView
         ref={cameraRef}
-        style={StyleSheet.absoluteFillObject}
+        key={facing}
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: containerSize.width, 
+            height: containerSize.height, }}
         facing={facing}
         flash={flashOn ? 'on' : 'off'}
+         mirror={facing === 'front'}
       />
-
+       )}
 
       {/* CAMERA OVERLAY */}
 
@@ -398,37 +393,32 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-
-  previewContainer: {
-  flex: 1,
-  width: '100%',
-  backgroundColor: '#fff',
-},
-
-photoArea: {
-  top: 40,
+previewContainer: {
   flex: 1,
   width: '100%',
   backgroundColor: '#010101',
-  position: 'relative',
 },
 
 previewImage: {
-  width: '100%',
-  height: '100%',
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
 },
 
 previewCard: {
-  top: 40,
-  width: '100%',
-  height: 255,
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  height: 250,
   alignItems: 'center',
   justifyContent: 'center',
 },
-
 backButton: {
   position: 'absolute',
-  top: 15,
+  top: 60,
   left: 10,
   width: 45,
   height: 45,
@@ -440,7 +430,7 @@ backButton: {
 
 previewTitle: {
   position: 'absolute',
-  top: 20,
+  top: 70,
   alignSelf: 'center',
   color: '#fff',
   fontSize: 20,
