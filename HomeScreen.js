@@ -6,18 +6,35 @@ import {
   FlatList,
   Dimensions,
   TouchableOpacity,
+  ImageBackground,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from './ThemeContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const DATA = [
-  { name: 'Ao'},
-  {name: 'Angami'},
-  { name: 'Konyak'},
-  { name: 'Sangtam'},
-  { name: 'Zeliang'},
-  { name: 'Phom'},
+  {
+    name: 'Ao',
+    image: require('./assets/digital/AoDigital.png'),
+  },
+  {
+    name: 'Angami',
+    image: require('./assets/digital/angamiDigital.png'),
+  },
+  {
+    name: 'Konyak',
+    image: require('./assets/digital/konyakDigital.png'),
+  },
+  {name: 'Sangtam',},
+  {
+    name: 'Zeliang',
+    image: require('./assets/digital/ZeliangDigital.png'),
+  },
+  {
+    name: 'Phom',
+    image: require('./assets/digital/PhomDigital.png'),
+  },
 ];
 const { width } = Dimensions.get('window');
 
@@ -41,12 +58,37 @@ export default function HomeScreen() {
           columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 15 }}
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 60, paddingHorizontal: 20 }}
           renderItem={({ item }) => (
-          <TouchableOpacity style={[styles.box, { backgroundColor: colors.box }]}
-          onPress={() => navigation.navigate(item.name)}>           
-          
-          <Text style={[styles.boxText, { color: colors.boxText}]}>
-            {item.name}</Text>
-          </TouchableOpacity>
+
+<TouchableOpacity
+  style={styles.box}
+  onPress={() => navigation.navigate(item.name)}
+>
+  <ImageBackground
+    source={item.image}
+    style={styles.boxBackground}
+    imageStyle={styles.boxImage}
+  >
+    <LinearGradient
+  colors={[
+    'rgba(180, 180, 180, 0.05)',
+    'rgba(120, 120, 120, 0.20)',
+    'rgba(50, 50, 50, 0.65)',
+  ]}
+  locations={[0, 0.55, 1]}
+  style={styles.overlay}
+/>
+<Text
+  style={[
+    styles.boxText,
+    {
+      color: '#FFFFFF',
+    },
+  ]}
+>
+  {item.name}
+</Text>
+  </ImageBackground>
+</TouchableOpacity>
           )}
         />
       </View>
@@ -83,12 +125,27 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     backgroundColor: '#111010',
     borderRadius: 20,
+    overflow: 'hidden',
 },
 
+boxBackground: {
+  flex: 1,
+  justifyContent: 'flex-end',
+},
+
+boxImage: {
+  borderRadius: 20,
+},
+
+overlay: {
+  ...StyleSheet.absoluteFillObject,
+},
 boxText: {
   fontSize: 25,
   fontWeight: '700',
-  left: 20,
-  top: 110,
+  color: '#fff',
+   marginLeft: 20,
+  marginBottom: 15,
+  zIndex: 2
 },
 });

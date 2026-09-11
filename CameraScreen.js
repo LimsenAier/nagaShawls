@@ -25,7 +25,7 @@ export default function CameraScreen() {
     const pickImage = async () => {
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
-    allowsEditing: true,
+    allowsEditing: false,
     quality: 1,
   });
 
@@ -81,26 +81,38 @@ if (photo) {
   return (
     <View style={styles.previewContainer}>
 
+      {/* FULL IMAGE */}
       <Image
         source={{ uri: photo }}
         style={styles.previewImage}
-        resizeMode="cover"
+        resizeMode="contain"
       />
 
+      {/* BACK BUTTON */}
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => setPhoto(null)}
       >
-        <Ionicons name="arrow-back" size={25} color="#fff" />
+        <Ionicons
+          name="arrow-back"
+          size={25}
+          color="#fff"
+        />
       </TouchableOpacity>
 
+      {/* TITLE */}
       <Text style={styles.previewTitle}>
         Shawl Preview
       </Text>
 
+      {/* BOTTOM CARD */}
       <View
-        style={[styles.previewCard, { backgroundColor: colors.card }]}
+        style={[
+          styles.previewCard,
+          { backgroundColor: colors.card },
+        ]}
       >
+
         <TouchableOpacity
           style={styles.identifyButton}
           onPress={handleIdentify}
@@ -109,12 +121,12 @@ if (photo) {
             Identify Shawl
           </Text>
         </TouchableOpacity>
+
       </View>
 
     </View>
   );
 }
-
 
   // Request camera permission
   if (!permission) {
@@ -404,7 +416,8 @@ previewImage: {
   top: 0,
   left: 0,
   right: 0,
-  bottom: 0,
+  bottom: 250,
+  width: '100%'
 },
 
 previewCard: {
@@ -426,6 +439,7 @@ backButton: {
   backgroundColor: 'rgba(0,0,0,0.5)',
   justifyContent: 'center',
   alignItems: 'center',
+  zIndex: 10
 },
 
 previewTitle: {
@@ -435,6 +449,7 @@ previewTitle: {
   color: '#fff',
   fontSize: 20,
   fontWeight: 'bold',
+  zIndex: 10
 },
 
 identifyButton: {

@@ -10,6 +10,8 @@ import { useTheme } from './ThemeContext';
 import HomeScreen from './HomeScreen';
 import CameraScreen from './CameraScreen';
 import SettingsScreen from './SettingsScreen';
+import About from './About';
+import Help from './Help';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import AoScreen from './Tribes/AoScreen';
@@ -119,6 +121,11 @@ export default function App() {
         <Stack.Screen name="Konyak" component={KonyakScreen} />
         <Stack.Screen name="Zeliang" component={ZeliangScreen} />
         <Stack.Screen name="Phom" component={PhomScreen} />
+        <Stack.Screen name="About" component={About}
+         options={{headerShown: false,}} />
+         <Stack.Screen name="Help"component={Help}
+  options={{headerShown: false,}}
+/>
 
       </Stack.Navigator>
     </NavigationContainer>

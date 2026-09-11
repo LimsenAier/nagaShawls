@@ -11,11 +11,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from './ThemeContext';
+import { useNavigation } from '@react-navigation/native';
 
 export default function SettingsScreen() {
 
+  const navigation = useNavigation();
   const { isDark, toggleTheme, colors } = useTheme();
-
   const Row = ({
     icon,
     title,
@@ -23,9 +24,12 @@ export default function SettingsScreen() {
     isSwitch,
     switchValue,
     onSwitchChange,
+    onPress,
   }) => (
 
-    <TouchableOpacity style={styles.row}>
+    <TouchableOpacity style={styles.row} 
+    onPress={onPress}
+    activeOpacity={0.7}>
 
       {/* LEFT SIDE */}
       <View style={styles.left}>
@@ -123,6 +127,7 @@ export default function SettingsScreen() {
         {/* HELP */}
         <Row
           title="Help"
+          onPress={() => navigation.navigate('Help')}
           icon={
             <Ionicons
               name="help-circle-outline"
@@ -134,6 +139,7 @@ export default function SettingsScreen() {
         {/* ABOUT */}
         <Row
           title="About"
+          onPress={() => navigation.navigate('About')}
           icon={
             <Ionicons
               name="information-circle-outline"
