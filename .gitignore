@@ -35,6 +35,13 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+# Debug logs
+*.log
+
+# Local environment files
+.env
+.env.*
+!.env.example
 
 # generated native folders
 /ios
