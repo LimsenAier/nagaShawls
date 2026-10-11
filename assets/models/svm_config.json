@@ -1,0 +1,14 @@
+{
+    "kernel": "rbf",
+    "C": 10,
+    "gamma": 0.00010753921707686838,
+    "n_support_vectors": 766,
+    "n_features": 512,
+    "classes": [
+        "angami",
+        "ao",
+        "konyak",
+        "phom",
+        "zeliang"
+    ]
+}
