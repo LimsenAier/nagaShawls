@@ -1,145 +1,171 @@
 import React, { useRef, useState } from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {Ionicons,} from '@expo/vector-icons';
-import {CameraView, useCameraPermissions,} from 'expo-camera';
+import { Ionicons } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from './ThemeContext';
-import { Dimensions } from 'react-native';
-
+import { extractVGG16Features } from './VGG16FeatureExtractor';
+import { predictShawl } from './SVMClassifier';
 
 export default function CameraScreen() {
+  const { colors } = useTheme();
 
-   const { colors } = useTheme();
-   
-  //states
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
+
   const [flashOn, setFlashOn] = useState(false);
   const [photo, setPhoto] = useState(null);
+  const [isIdentifying, setIsIdentifying] = useState(false);
+  const [prediction, setPrediction] = useState(null);
+  const [identifyError, setIdentifyError] = useState(null);
+  const [photoError, setPhotoError] = useState(null);
   const [facing, setFacing] = useState('back');
-  const { width, height } = Dimensions.get('window');
   const [containerSize, setContainerSize] = useState(null);
 
-  //functions
-    const pickImage = async () => {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ['images'],
-    allowsEditing: false,
-    quality: 1,
-  });
+  // Clear previous results and errors.
+  const resetResult = () => {
+    setPrediction(null);
+    setIdentifyError(null);
+    setPhotoError(null);
+  };
 
-  if (!result.canceled) {
-    const selectedImage = result.assets[0].uri;
-    
-    setPhoto(selectedImage);
-
-    console.log('Selected image:', selectedImage);
-  }
-};
-
-//switch camera
-  const toggleCamera = () => {
-  setFacing(current =>
-    current === 'back' ? 'front' : 'back'
-  );
-
-};
-
-
-  // Take photo
-  const takePhoto = async () => {
-  if (!cameraRef.current) {
-    return;
-  }
-
-  try {
-    const capturedPhoto =
-      await cameraRef.current.takePictureAsync({
+  // Select an image from the gallery.
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
         quality: 1,
       });
 
-    setPhoto(capturedPhoto.uri);
+      if (!result.canceled && result.assets?.length > 0) {
+        resetResult();
 
-    console.log('Photo taken:', capturedPhoto.uri);
+        setPhoto(result.assets[0].uri);
 
-  } catch (error) {
-    console.log('Error taking photo:', error);
-  }
-};
+        console.log('Selected image:', result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Could not select image:', error);
 
-//identify image
-const handleIdentify = () => {
-  console.log('Identifying image:', photo);
+      setPhotoError(
+        error?.message || 'Could not open the image gallery.'
+      );
+    }
+  };
 
-  // Model prediction will be added here later
-}; 
+  // Switch between the front and rear cameras.
+  const toggleCamera = () => {
+    setFacing((current) =>
+      current === 'back' ? 'front' : 'back'
+    );
 
+    setFlashOn(false);
+  };
 
-// PHOTO PREVIEW
-if (photo) {
-  return (
-    <View style={styles.previewContainer}>
+  // Capture a photo.
+  const takePhoto = async () => {
+    if (!cameraRef.current) {
+      setPhotoError(
+        'Camera is not ready. Please try again.'
+      );
+      return;
+    }
 
-      {/* FULL IMAGE */}
-      <Image
-        source={{ uri: photo }}
-        style={styles.previewImage}
-        resizeMode="contain"
-      />
+    try {
+      const capturedPhoto =
+        await cameraRef.current.takePictureAsync({
+          quality: 1,
+        });
 
-      {/* BACK BUTTON */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => setPhoto(null)}
-      >
-        <Ionicons
-          name="arrow-back"
-          size={25}
-          color="#fff"
-        />
-      </TouchableOpacity>
+      if (capturedPhoto?.uri) {
+        resetResult();
 
-      {/* TITLE */}
-      <Text style={styles.previewTitle}>
-        Shawl Preview
-      </Text>
+        setPhoto(capturedPhoto.uri);
 
-      {/* BOTTOM CARD */}
-      <View
-        style={[
-          styles.previewCard,
-          { backgroundColor: colors.card },
-        ]}
-      >
+        console.log('Photo taken:', capturedPhoto.uri);
+      } else {
+        setPhotoError(
+          'The camera did not return an image. Please try again.'
+        );
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
 
-        <TouchableOpacity
-          style={styles.identifyButton}
-          onPress={handleIdentify}
-        >
-          <Text style={styles.identifyText}>
-            Identify Shawl
-          </Text>
-        </TouchableOpacity>
+      setPhotoError(
+        error?.message || 'Could not take the photo.'
+      );
+    }
+  };
 
-      </View>
+  // Extract VGG16 features and classify the shawl using SVM.
+  const handleIdentify = async () => {
+    if (!photo || isIdentifying) {
+      return;
+    }
 
-    </View>
-  );
-}
+    setIsIdentifying(true);
+    setPrediction(null);
+    setIdentifyError(null);
 
-  // Request camera permission
+    try {
+      // Extract the 512-dimensional feature vector.
+      const features = await extractVGG16Features(photo);
+
+      // Predict the Naga tribe.
+      const result = predictShawl(features);
+
+      if (
+        typeof result !== 'string' ||
+        result.length === 0
+      ) {
+        throw new Error(
+          'The classifier returned an invalid prediction.'
+        );
+      }
+
+      setPrediction(result);
+
+      console.log('Shawl prediction:', result);
+    } catch (error) {
+      console.error(
+        'Shawl identification failed:',
+        error
+      );
+
+      setIdentifyError(
+        error?.message ||
+          'Could not identify this shawl. Please try another image.'
+      );
+    } finally {
+      setIsIdentifying(false);
+    }
+  };
+
+  // Wait for the camera permission state.
   if (!permission) {
-    return <View />;
+    return (
+      <View style={styles.permissionContainer} />
+    );
   }
 
-
+  // Request permission if the camera is not authorized.
   if (!permission.granted) {
-
     return (
       <SafeAreaView style={styles.permissionContainer}>
-
-        <Text style={styles.permissionText}>
+        <Text
+          style={[
+            styles.permissionText,
+            { color: colors.text },
+          ]}
+        >
           Camera permission is required to scan a shawl.
         </Text>
 
@@ -151,93 +177,215 @@ if (photo) {
             Allow Camera
           </Text>
         </TouchableOpacity>
-
       </SafeAreaView>
     );
-
   }
 
+  // Display the captured or selected image.
+  if (photo) {
+    const formattedPrediction =
+      typeof prediction === 'string' &&
+      prediction.length > 0
+        ? prediction.charAt(0).toUpperCase() +
+          prediction.slice(1)
+        : null;
 
+    return (
+      <View style={styles.previewContainer}>
+        {/* Image preview */}
+        <Image
+          source={{ uri: photo }}
+          style={styles.previewImage}
+          resizeMode="contain"
+        />
+
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => {
+            setPhoto(null);
+            resetResult();
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Return to camera"
+        >
+          <Ionicons
+            name="arrow-back"
+            size={25}
+            color="#fff"
+          />
+        </TouchableOpacity>
+
+        {/* Screen title */}
+        <Text style={styles.previewTitle}>
+          Shawl Preview
+        </Text>
+
+        {/* Identification result card */}
+        <View
+          style={[
+            styles.previewCard,
+            { backgroundColor: colors.card },
+          ]}
+        >
+          {isIdentifying && (
+            <Text
+              style={[
+                styles.statusText,
+                { color: colors.text },
+              ]}
+            >
+              Identifying shawl...
+            </Text>
+          )}
+
+          {formattedPrediction && !isIdentifying && (
+            <Text
+              style={[
+                styles.predictionText,
+                { color: colors.text },
+              ]}
+            >
+              Identified Tribe: {formattedPrediction}
+            </Text>
+          )}
+
+          {identifyError && (
+            <Text style={styles.errorText}>
+              {identifyError}
+            </Text>
+          )}
+
+          {photoError && (
+            <Text style={styles.errorText}>
+              {photoError}
+            </Text>
+          )}
+
+          {/* Identify button */}
+          <TouchableOpacity
+            style={[
+              styles.identifyButton,
+              isIdentifying &&
+                styles.identifyButtonDisabled,
+            ]}
+            onPress={handleIdentify}
+            disabled={isIdentifying}
+            accessibilityRole="button"
+          >
+            <Text style={styles.identifyText}>
+              {isIdentifying
+                ? 'Identifying...'
+                : 'Identify Shawl'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  // Main camera screen.
   return (
+    <SafeAreaView
+      style={styles.container}
+      onLayout={(event) => {
+        const { width, height } =
+          event.nativeEvent.layout;
 
-    <SafeAreaView style={styles.container}
-      onLayout={(e) => {
-    const { width, height } = e.nativeEvent.layout;
-    setContainerSize({ width, height });
-  }}>
+        setContainerSize({ width, height });
+      }}
+    >
+      {/* Camera preview */}
+      {containerSize && (
+        <CameraView
+          ref={cameraRef}
+          key={facing}
+          style={[
+            styles.camera,
+            {
+              width: containerSize.width,
+              height: containerSize.height,
+            },
+          ]}
+          facing={facing}
+          flash={
+            flashOn && facing === 'back'
+              ? 'on'
+              : 'off'
+          }
+          mirror={facing === 'front'}
+        />
+      )}
 
-      {/* CAMERA */}
-       {containerSize && (
-      <CameraView
-        ref={cameraRef}
-        key={facing}
-          style={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            width: containerSize.width, 
-            height: containerSize.height, }}
-        facing={facing}
-        flash={flashOn ? 'on' : 'off'}
-         mirror={facing === 'front'}
-      />
-       )}
-
-      {/* CAMERA OVERLAY */}
-
+      {/* Camera overlay */}
       <View style={styles.overlay}>
-
-        {/* FLASH BUTTON */}
-
+        {/* Flash button */}
         <TouchableOpacity
           style={styles.flashButton}
-          onPress={() => setFlashOn(!flashOn)}
+          onPress={() =>
+            setFlashOn((current) => !current)
+          }
+          disabled={facing === 'front'}
+          accessibilityRole="button"
+          accessibilityLabel="Toggle flash"
         >
-
           <Ionicons
             name={
-              flashOn
+              flashOn && facing === 'back'
                 ? 'flash'
                 : 'flash-off'
             }
             size={20}
-            color="#fff"
+            color={
+              facing === 'front' ? '#888' : '#fff'
+            }
           />
-
         </TouchableOpacity>
 
-
-        {/* SCAN FRAME */}
-
+        {/* Scanning frame */}
         <View style={styles.frame}>
+          <View
+            style={[styles.corner, styles.topLeft]}
+          />
 
           <View
-            style={[styles.corner, styles.topLeft,]}
+            style={[styles.corner, styles.topRight]}
           />
+
           <View
-            style={[styles.corner, styles.topRight,]}
+            style={[styles.corner, styles.bottomLeft]}
           />
+
           <View
-            style={[styles.corner, styles.bottomLeft,]}
+            style={[styles.corner, styles.bottomRight]}
           />
-          <View
-            style={[styles.corner, styles.bottomRight,]}
-          />
+
           <Text style={styles.instruction}>
             Position the shawl inside the frame
           </Text>
         </View>
       </View>
 
+      {/* Bottom camera controls */}
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.card },
+        ]}
+      >
+        {photoError && (
+          <Text style={styles.errorText}>
+            {photoError}
+          </Text>
+        )}
 
-      {/* BOTTOM CARD */}
-
-      <View style={[styles.card, {backgroundColor: colors.card}]}>
         <View style={styles.bottomBar}>
-
-          {/* GALLERY */}
-
-          <TouchableOpacity onPress={pickImage}>
+          {/* Gallery button */}
+          <TouchableOpacity
+            onPress={pickImage}
+            accessibilityRole="button"
+            accessibilityLabel="Choose image from gallery"
+          >
             <Ionicons
               name="images-outline"
               size={28}
@@ -245,21 +393,22 @@ if (photo) {
             />
           </TouchableOpacity>
 
-
-          {/* CAPTURE */}
-
+          {/* Capture button */}
           <TouchableOpacity
             style={styles.captureBtn}
             onPress={takePhoto}
+            accessibilityRole="button"
+            accessibilityLabel="Take photo"
           >
-
             <View style={styles.innerCircle} />
           </TouchableOpacity>
 
-
-          {/* SWITCH CAMERA */}
-
-          <TouchableOpacity onPress={toggleCamera}>
+          {/* Switch camera button */}
+          <TouchableOpacity
+            onPress={toggleCamera}
+            accessibilityRole="button"
+            accessibilityLabel="Switch camera"
+          >
             <Ionicons
               name="camera-reverse-outline"
               size={28}
@@ -272,18 +421,25 @@ if (photo) {
   );
 }
 
-
+// Styles
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: '#004361',
   },
+
+  camera: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+
   overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   frame: {
     width: 280,
     height: 280,
@@ -291,12 +447,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     bottom: 100,
   },
+
   corner: {
     position: 'absolute',
     width: 40,
     height: 40,
     borderColor: '#fff',
   },
+
   topLeft: {
     top: 0,
     left: 0,
@@ -304,6 +462,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderTopLeftRadius: 12,
   },
+
   topRight: {
     top: 0,
     right: 0,
@@ -311,6 +470,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 4,
     borderTopRightRadius: 12,
   },
+
   bottomLeft: {
     bottom: 0,
     left: 0,
@@ -318,6 +478,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderBottomLeftRadius: 12,
   },
+
   bottomRight: {
     bottom: 0,
     right: 0,
@@ -325,6 +486,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 4,
     borderBottomRightRadius: 12,
   },
+
   instruction: {
     color: '#fff',
     fontSize: 15,
@@ -333,7 +495,6 @@ const styles = StyleSheet.create({
     bottom: -35,
     width: 270,
   },
-  /* FLASH */
 
   flashButton: {
     position: 'absolute',
@@ -347,7 +508,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 10,
   },
-  /* BOTTOM CARD */
 
   card: {
     position: 'absolute',
@@ -356,6 +516,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: 250,
   },
+
   bottomBar: {
     position: 'absolute',
     top: 35,
@@ -365,7 +526,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  /* CAPTURE BUTTON */
 
   captureBtn: {
     width: 70,
@@ -376,13 +536,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   innerCircle: {
     width: 55,
     height: 55,
     borderRadius: 27.5,
     backgroundColor: '#999999',
   },
-  /* PERMISSION */
 
   permissionContainer: {
     flex: 1,
@@ -390,82 +550,113 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 30,
   },
+
   permissionText: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
   },
+
   permissionButton: {
     paddingHorizontal: 25,
     paddingVertical: 12,
     borderRadius: 25,
     backgroundColor: '#004361',
   },
+
   permissionButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
-previewContainer: {
-  flex: 1,
-  width: '100%',
-  backgroundColor: '#010101',
-},
 
-previewImage: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 250,
-  width: '100%'
-},
+  previewContainer: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#010101',
+  },
 
-previewCard: {
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  height: 250,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-backButton: {
-  position: 'absolute',
-  top: 60,
-  left: 10,
-  width: 45,
-  height: 45,
-  borderRadius: 23,
-  backgroundColor: 'rgba(0,0,0,0.5)',
-  justifyContent: 'center',
-  alignItems: 'center',
-  zIndex: 10
-},
+  previewImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 250,
+    width: '100%',
+    height: '100%',
+  },
 
-previewTitle: {
-  position: 'absolute',
-  top: 70,
-  alignSelf: 'center',
-  color: '#fff',
-  fontSize: 20,
-  fontWeight: 'bold',
-  zIndex: 10
-},
+  previewCard: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 250,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
 
-identifyButton: {
-  marginBottom: 90,
-  width: '70%',
-  height: 55,
-  borderRadius: 28,
-  backgroundColor: '#004361',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 10,
+    width: 45,
+    height: 45,
+    borderRadius: 23,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
 
-identifyText: {
-  color: '#fff',
-  fontSize: 17,
-  fontWeight: 'bold',
-},
+  previewTitle: {
+    position: 'absolute',
+    top: 70,
+    alignSelf: 'center',
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    zIndex: 10,
+  },
 
+  statusText: {
+    textAlign: 'center',
+    marginBottom: 10,
+    fontSize: 16,
+  },
+
+  predictionText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+
+  errorText: {
+    color: '#d32f2f',
+    textAlign: 'center',
+    marginHorizontal: 16,
+    marginBottom: 10,
+  },
+
+  identifyButton: {
+    marginTop: 10,
+    width: '70%',
+    minHeight: 55,
+    borderRadius: 28,
+    backgroundColor: '#004361',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+
+  identifyButtonDisabled: {
+    opacity: 0.65,
+  },
+
+  identifyText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
 });

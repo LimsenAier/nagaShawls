@@ -1,8 +1,8 @@
 {
     "kernel": "rbf",
-    "C": 10,
-    "gamma": 0.00010753921707686838,
-    "n_support_vectors": 766,
+    "C": 1.0,
+    "gamma": 0.00011173995878987762,
+    "n_support_vectors": 1190,
     "n_features": 512,
     "classes": [
         "angami",
