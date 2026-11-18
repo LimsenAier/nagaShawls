@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  Image,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -36,13 +37,15 @@ export default function AboutScreen() {
 
           {/* ICON */}
 
-          <View style={styles.iconContainer}>
-            <Ionicons
-              name="shirt-outline"
-              size={55}
-              color="#fff"
-            />
-          </View>
+            
+<View style={styles.iconContainer}>
+  <Image
+    source={require('./assets/splashicon.png')}
+    style={{ width: 100, height: 100, borderRadius: 20 }}
+    resizeMode="contain"
+  />
+</View>
+
 
           {/* APP NAME */}
 
@@ -226,12 +229,12 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 90,
     height: 90,
-    borderRadius: 45,
+    borderRadius: 30,
     backgroundColor: '#004361',
     alignSelf: 'center',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 15,
+    marginTop: 20,
     marginBottom: 20,
   },
 
@@ -251,7 +254,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     lineHeight: 25,
-    marginBottom: 20,
+    marginBottom: 15,
   },
 
   sectionTitle: {

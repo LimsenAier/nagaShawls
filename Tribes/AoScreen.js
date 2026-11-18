@@ -313,6 +313,87 @@ export default function AoScreen() {
     style={styles.shawlImage}
   />
 </TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao18.png'))}
+>
+  <Image
+    source={require('../assets/ao18.png')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao19.jpeg'))}
+>
+  <Image
+    source={require('../assets/ao19.jpeg')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao20.jpeg'))}
+>
+  <Image
+    source={require('../assets/ao20.jpeg')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao21.jpeg'))}
+>
+  <Image
+    source={require('../assets/ao21.jpeg')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao22.jpeg'))}
+>
+  <Image
+    source={require('../assets/ao22.jpeg')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao23.jpeg'))}
+>
+  <Image
+    source={require('../assets/ao23.jpeg')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao24.jpeg'))}
+>
+  <Image
+    source={require('../assets/ao24.jpeg')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao25.jpeg'))}
+>
+  <Image
+    source={require('../assets/ao25.jpeg')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
+ <TouchableOpacity
+  style={styles.imageBox}
+  onPress={() => setSelectedImage(require('../assets/ao26.jpeg'))}
+>
+  <Image
+    source={require('../assets/ao26.jpeg')}
+    style={styles.shawlImage}
+  />
+</TouchableOpacity>
           </View>
         </ScrollView>
       </View>

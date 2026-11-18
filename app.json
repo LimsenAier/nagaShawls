@@ -4,7 +4,7 @@
     "slug": "NagaShawlsIdentifier",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/appicon.jpeg",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -21,9 +21,18 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-font",
-      "react-native-fast-tflite"
-    ]
+ "plugins": [
+  "expo-font",
+  "react-native-fast-tflite",
+  [
+    "expo-splash-screen",
+    {
+      "image": "./assets/splashicon.png",
+      "imageWidth": 200,
+      "resizeMode": "contain",
+      "backgroundColor": "#004361"
+    }
+  ]
+]
   }
 }
