@@ -12,14 +12,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/appicon.jpeg",
+        "backgroundImage": "./assets/backgroundNS.png",
+        "monochromeImage": "./assets/monochrome-icon.png"
       },
       "package": "com.limsenaier.NagaShawlsIdentifier"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon1g.png"
     },
  "plugins": [
   "expo-font",
